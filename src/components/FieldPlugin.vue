@@ -1,32 +1,247 @@
-<script setup lang="ts">
+<script setup>
 import { useFieldPlugin } from '@storyblok/field-plugin/vue3'
+import { computed, onMounted, reactive, ref, watch } from 'vue'
+import { createFieldPlugin } from '@storyblok/field-plugin'
 
-const plugin = useFieldPlugin({
-  /*
-    The `validateContent` parameter is optional. It allows you to
-      - validate the content
-      - make changes before sending it to the Storyblok Visual Editor
-      - provide type-safety
-
-    // For example,
-    validateContent: (content: unknown) => {
-      if (typeof content === 'string') {
-        return {
-          content,
-        }
-      } else {
-        return {
-          content,
-          error: `content is expected to be a string (actual value: ${JSON.stringify(content)})`,
-        }
-      }
+createFieldPlugin({
+  onUpdateState: (response) => {
+    if (response.data.content) {
+      Object.assign(selectedSizes, response.data.content)
     }
-  */
+  },
 })
+
+const plugin = useFieldPlugin()
+
+// const plugin = useFieldPlugin({
+//   validateContent: (content) => ({
+//     content: typeof content === 'object' ? content : selectedSizes,
+//   }),
+// })
+
+
+const breakpoints = [
+  { size: 's', label: 'Small' },
+  { size: 'm', label: 'Medium' },
+  { size: 'l', label: 'Large' },
+]
+
+const sizes = [
+  { size: 'inherit', label: 'Inherit' },
+  { size: 'none', label: 'None' },
+  { size: 's', label: 'Small' },
+  { size: 'm', label: 'Medium' },
+  { size: 'l', label: 'Large' },
+]
+
+const availableSizes = computed(() => {
+  if (selectedBreakpoint.value.size === 's') {
+    return sizes.filter(size => size.size !== 'inherit')
+  }
+  return sizes
+})
+
+const selectedBreakpoint = ref(breakpoints[0])
+const selectedTopPadding = ref(null)
+const selectedBottomPadding = ref(null)
+
+// Create a reactive object to hold the selected sizes for each breakpoint
+const selectedSizes = reactive({
+  s: { padding: { top: 'none', bottom: 'none' } },
+  m: { padding: { top: 'inherit', bottom: 'inherit' } },
+  l: { padding: { top: 'inherit', bottom: 'inherit' } },
+})
+
+const handleBreakpointClick = (breakpoint) => {
+  selectedBreakpoint.value = breakpoint
+  selectedTopPadding.value = sizes.find(size => size.size === selectedSizes[breakpoint.size].padding.top)
+  selectedBottomPadding.value = sizes.find(size => size.size === selectedSizes[breakpoint.size].padding.bottom)
+}
+
+const handleSizeClick = (size, side) => {
+  selectedSizes[selectedBreakpoint.value.size]['padding'][side] = size.size
+
+  handleSave()
+}
+
+const handleSave = () => {
+  plugin.actions.setContent(selectedSizes)
+}
+
+watch(() => plugin.type,
+  (type) => {
+    if (type === 'loaded') {
+      handleBreakpointClick(breakpoints.find(breakpoint => breakpoint.size === 's'))
+    }
+  },
+)
+
 </script>
 
 <template>
-  <pre>
-    {{ JSON.stringify(plugin, null, 2) }}
-  </pre>
+  <h2 class="title">Breakpoint</h2>
+
+  <div class="button-group">
+    <button
+      v-for="breakpoint in breakpoints"
+      :key="breakpoint.size"
+      @click="handleBreakpointClick(breakpoint)"
+      class="button-group__button"
+      :class="{ 'button-group__button--active': selectedBreakpoint.size === breakpoint.size }"
+    >
+      {{ breakpoint.label }}
+    </button>
+  </div>
+
+  <div class="box-model">
+      <p class="box-model__title">Padding</p>
+
+      <label class="select">
+        <span class="select__label">Top:</span>
+
+        <select v-model="selectedTopPadding" @change="handleSizeClick(selectedTopPadding, 'top')"
+                class="select__control">
+          <option value="" disabled selected>Please select size</option>
+          <option v-for="size in availableSizes" :key="size.size" :value="size">{{ size.label }}</option>
+        </select>
+      </label>
+
+      <div class="box-model__content">
+        Content
+      </div>
+
+      <label class="select">
+        <span class="select__label">Bottom:</span>
+
+        <select v-model="selectedBottomPadding" @change="handleSizeClick(selectedBottomPadding, 'bottom')"
+                class="select__control">
+          <option value="" disabled selected>Please select size</option>
+          <option v-for="size in availableSizes" :key="size.size" :value="size">{{ size.label }}</option>
+        </select>
+      </label>
+  </div>
 </template>
+
+<style lang="postcss" scoped>
+
+.title {
+  margin: 0 0 7px;
+
+  color: var(--sb_dark_blue_75);
+  font-size: 12px;
+  font-weight: normal;
+  text-align: center;
+}
+
+.button-group {
+  display: flex;
+
+  justify-content: center;
+
+  margin-bottom: 16px;
+
+  border-radius: 5px;
+}
+
+.button-group__button {
+  padding: 8px 10px;
+
+  background-color: var(--sb_green_25);
+  border: none;
+
+  font-family: inherit;
+  font-weight: 500;
+
+  cursor: pointer;
+
+  &:first-child {
+    border-top-left-radius: 5px;
+    border-bottom-left-radius: 5px;
+  }
+
+  &:last-child {
+    border-top-right-radius: 5px;
+    border-bottom-right-radius: 5px;
+  }
+
+  &:hover {
+    background-color: var(--sb_green_50);
+  }
+
+  &:hover, &:active {
+    background-color: var(--sb_green);
+
+    color: #fff;
+  }
+}
+
+.button-group__button--active {
+  background-color: var(--sb_green);
+
+  color: #fff;
+}
+
+.box-model {
+  padding: 20px;
+
+  background-color: var(--light_50);
+  border: 1px solid #dbdde2;
+  border-radius: 8px;
+
+  text-align: center;
+}
+
+.box-model__title {
+  margin: 0 0 7px;
+
+  color: var(--sb_dark_blue_75);
+  font-size: 12px;
+}
+
+.box-model__content {
+  margin: 20px 0;
+  padding: 10px;
+
+  background-color: var(--light);
+  border-radius: 5px;
+
+  color: var(--sb_dark_blue_75);
+  font-size: 12px;
+}
+
+.select {
+  display: flex;
+  gap: 10px;
+
+  align-items: center;
+  justify-content: center;
+}
+
+.select__label {
+  width: 43px;
+
+  color: var(--sb_dark_blue_75);
+  font-size: 12px;
+  text-align: right;
+}
+
+.select__control {
+  --webkit-appearance: none;
+  --appearance: none;
+
+  padding: 4px 8px;
+
+  background-color: #fff;
+  border: 1px solid var(--light_gray);
+  border-radius: 5px;
+
+  font-size: 12px;
+
+  &:hover {
+    border-color: var(--sb_green);
+
+    cursor: pointer;
+  }
+}
+
+</style>
