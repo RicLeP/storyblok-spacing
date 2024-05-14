@@ -47,19 +47,19 @@ const selectedBottomPadding = ref(null)
 
 // Create a reactive object to hold the selected sizes for each breakpoint
 const selectedSizes = reactive({
-  s: { padding: { top: 'none', bottom: 'none' } },
-  m: { padding: { top: 'inherit', bottom: 'inherit' } },
-  l: { padding: { top: 'inherit', bottom: 'inherit' } },
+  s: { top: 'none', bottom: 'none' },
+  m: { top: 'inherit', bottom: 'inherit' },
+  l: { top: 'inherit', bottom: 'inherit' },
 })
 
 const handleBreakpointClick = (breakpoint) => {
   selectedBreakpoint.value = breakpoint
-  selectedTopPadding.value = sizes.find(size => size.size === selectedSizes[breakpoint.size].padding.top)
-  selectedBottomPadding.value = sizes.find(size => size.size === selectedSizes[breakpoint.size].padding.bottom)
+  selectedTopPadding.value = sizes.find(size => size.size === selectedSizes[breakpoint.size].top)
+  selectedBottomPadding.value = sizes.find(size => size.size === selectedSizes[breakpoint.size].bottom)
 }
 
 const handleSizeClick = (size, side) => {
-  selectedSizes[selectedBreakpoint.value.size]['padding'][side] = size.size
+  selectedSizes[selectedBreakpoint.value.size][side] = size.size
 
   handleSave()
 }
