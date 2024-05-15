@@ -79,21 +79,22 @@ watch(() => plugin.type,
 </script>
 
 <template>
-  <h2 class="title">Breakpoint</h2>
+  <div v-if="plugin.type === 'loaded'">
+    <h2 class="title">Breakpoint</h2>
 
-  <div class="button-group">
-    <button
-      v-for="breakpoint in breakpoints"
-      :key="breakpoint.size"
-      @click="handleBreakpointClick(breakpoint)"
-      class="button-group__button"
-      :class="{ 'button-group__button--active': selectedBreakpoint.size === breakpoint.size }"
-    >
-      {{ breakpoint.label }}
-    </button>
-  </div>
+    <div class="button-group">
+      <button
+        v-for="breakpoint in breakpoints"
+        :key="breakpoint.size"
+        @click="handleBreakpointClick(breakpoint)"
+        class="button-group__button"
+        :class="{ 'button-group__button--active': selectedBreakpoint.size === breakpoint.size }"
+      >
+        {{ breakpoint.label }}
+      </button>
+    </div>
 
-  <div class="box-model">
+    <div class="box-model">
       <label class="select">
         <span class="select__label">Top:</span>
 
@@ -117,6 +118,7 @@ watch(() => plugin.type,
           <option v-for="size in availableSizes" :key="size.size" :value="size">{{ size.label }}</option>
         </select>
       </label>
+    </div>
   </div>
 </template>
 
