@@ -94,8 +94,6 @@ watch(() => plugin.type,
   </div>
 
   <div class="box-model">
-      <p class="box-model__title">Padding</p>
-
       <label class="select">
         <span class="select__label">Top:</span>
 
@@ -184,25 +182,18 @@ watch(() => plugin.type,
 .box-model {
   padding: 20px;
 
-  background-color: var(--light_50);
+  background-color: #fff;
   border: 1px solid #dbdde2;
   border-radius: 8px;
 
   text-align: center;
 }
 
-.box-model__title {
-  margin: 0 0 7px;
-
-  color: var(--sb_dark_blue_75);
-  font-size: 12px;
-}
-
 .box-model__content {
   margin: 20px 0;
   padding: 10px;
 
-  background-color: var(--light);
+  background-color: var(--light_50);
   border-radius: 5px;
 
   color: var(--sb_dark_blue_75);
