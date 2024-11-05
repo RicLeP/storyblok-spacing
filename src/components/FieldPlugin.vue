@@ -9,6 +9,9 @@ createFieldPlugin({
       Object.assign(selectedSizes, response.data.content)
     }
   },
+  validateContent: (content) => ({
+    content: typeof content === 'object' ? content : selectedSizes,
+  }),
 })
 
 const plugin = useFieldPlugin()
@@ -71,6 +74,10 @@ const handleSave = () => {
 watch(() => plugin.type,
   (type) => {
     if (type === 'loaded') {
+      console.log(plugin.data);
+      if (!plugin.data.content) {
+         plugin.actions.setContent(selectedSizes); // sets the default values
+      }
       handleBreakpointClick(breakpoints.find(breakpoint => breakpoint.size === 's'))
     }
   },
